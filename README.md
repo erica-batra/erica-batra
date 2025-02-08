@@ -34,6 +34,8 @@ The DevOps background turned out to be useful. I already knew how infrastructure
 
 Right now I'm focused on making cloud infrastructure harder to compromise without making it harder to use. That's the trick, really—security that gets in the way just gets bypassed.
 
+I spend a lot of time translating security requirements into stuff teams can actually ship. Sometimes that means writing tools. Sometimes it means writing a one-pager that explains why a change matters. Sometimes it means fixing a policy that should have never been merged in the first place.
+
 **Main areas:**
 - Cloud IAM design (mostly AWS, because that's where the complexity lives)
 - Infrastructure security architecture
@@ -46,6 +48,22 @@ Right now I'm focused on making cloud infrastructure harder to compromise withou
 Coming from operations means I know where flexibility is actually needed versus where you need hard controls. I've seen what happens when security becomes a bottleneck—people find creative workarounds. So I try to build security that fits into existing workflows instead of fighting them.
 
 Also learned that detection matters as much as prevention. You're not going to stop every attack. Better to know when something's happening and have a plan for it.
+
+## Quick Flow: How I Work on Security Problems
+
+```
+Problem shows up
+  │
+  ├─ What could go wrong here? (threat model)
+  │
+  ├─ Is it already happening? (logs + evidence)
+  │
+  ├─ Fix the root cause (least privilege, network boundaries, guards)
+  │
+  ├─ Add detection (alerts, queries, dashboards)
+  │
+  └─ Write it down so nobody repeats it
+```
 
 ## My Approach to Security
 
@@ -60,6 +78,25 @@ A few things I've learned (some the hard way):
 **Automate or it won't happen.** Manual security processes don't scale. They get skipped when people are busy, which is always. If it's not automated, it's not really a control.
 
 **You can't protect what you can't see.** Logging and monitoring aren't nice-to-haves. They're how you know if any of your other controls are actually working.
+
+## Project Map (What I'm Building)
+
+```
+Identity + Access
+├─ IAM policy analyzer
+├─ Escalation detector
+└─ Threat modeling framework
+
+Infrastructure Scenarios
+├─ VPC security (baseline vs hardened)
+├─ Container security (baseline vs hardened)
+└─ Next: IAM escalation scenario
+
+Security Patterns
+├─ Secure CI/CD patterns
+├─ Policy as code framework
+└─ Secrets management patterns
+```
 
 ## Tech Stack
 
@@ -95,6 +132,17 @@ CloudWatch, CloudTrail, VPC Flow Logs, AWS Security Hub, GuardDuty
 
 ## Projects & Research
 
+### Project Highlights (Short Version)
+
+If you're short on time, these are the ones I usually point people to:
+
+- Infrastructure Security Scenarios (VPC + Container)  
+  Attack the insecure version, then harden it and prove the attacks fail.
+- IAM Policy Analyzer  
+  Flags admin wildcards, risky actions, missing conditions. Simple CLI, very practical.
+- Privilege Escalation Detector  
+  Finds the common escalation paths that show up in real IAM policies.
+
 ### Infrastructure Security Scenarios
 
 Hands-on scenarios for securing cloud infrastructure. Each one has:
@@ -111,6 +159,12 @@ Hands-on scenarios for securing cloud infrastructure. Each one has:
 
 These aren't theoretical. I built them to learn this stuff myself. Deploy the insecure version, attack it, see what breaks. Then deploy the hardened version and verify the attacks don't work anymore.
 
+### Flow: Scenario Structure
+
+```
+Baseline (insecure) -> Attack -> Harden -> Attack again -> Document what changed
+```
+
 ### Cloud IAM Architecture
 
 IAM is complicated. This is me documenting patterns I've learned—often the hard way.
@@ -123,6 +177,19 @@ IAM is complicated. This is me documenting patterns I've learned—often the har
 - Defensive IAM architectures
 
 Also built a policy analyzer tool that scans IAM policies for common issues. Catches things like admin wildcards, unrestricted PassRole, privilege escalation vectors. Tested it against 19 different policy scenarios—100% detection rate, zero false positives.
+
+### A Few More Projects (Less Polished, Still Useful)
+
+These are the ones I keep iterating on:
+
+- **IAM Break-Glass Pattern Notes**  
+  A small doc plus example policies. I keep changing it because real incidents always reveal missing steps.
+
+- **VPC Flow Log Triage Queries**  
+  Saved queries for SSH scans, weird outbound traffic, and database connections from the internet. They catch more than you'd think.
+
+- **Container Hardening Checklist**  
+  Practical list for Docker and ECS/EKS builds. This is the thing I wish I had when I started.
 
 ### Security Tools I've Built
 
@@ -160,6 +227,14 @@ Vault integration, dynamic credentials, rotation strategies, least privilege acc
 **Security Guardrails for DevOps**
 Shift-left security, automated policy checks, developer-friendly controls that actually get used.
 
+## Side Notes (Things I Wish I Knew Earlier)
+
+**Most security problems are boring.** It's usually the same handful of misconfigs, just in different clothing. The hard part is keeping the fixes in place when people are busy.
+
+**People over-trust automation.** CI/CD checks are great but they only cover what you tell them to check. The gaps are where incidents live.
+
+**"Temporary" permissions tend to become permanent.** I now treat every temporary exception like it will never be removed unless you force it.
+
 ## My Security Research
 
 I keep a separate research repo where I experiment with different security concepts:
@@ -176,6 +251,15 @@ I keep a separate research repo where I experiment with different security conce
 
 It's a mix of learning by doing, documenting what I find, and building tools to automate the boring parts.
 
+## Other Work I Keep Around
+
+Stuff that doesn't fit cleanly into the repos, but still matters:
+
+- Notes on IAM incident response (what to check first, what to lock down fast)
+- Common CloudTrail signals that actually indicate abuse
+- Policy linting rules for catching sloppy IAM patterns
+- Short threat models for typical app stacks (web + database + CI/CD)
+
 ## Certifications
 
 **Current:**
@@ -186,6 +270,13 @@ It's a mix of learning by doing, documenting what I find, and building tools to 
 - AWS Certified Security - Specialty
 - CISSP
 
+## Little Facts (If You Care)
+
+- I still write bash scripts even when I should use Python. Old habits.
+- I keep a notebook with the top 10 IAM mistakes I see. It's longer than 10 now.
+- I prefer boring solutions. Boring usually means reliable.
+- I like to document what broke and why, not just what I fixed.
+
 ## What I'm Learning Right Now
 
 **IAM federation in practice.** The documentation makes it sound straightforward. It's not. There are edge cases everywhere, and the trust relationships get complicated fast.
@@ -195,6 +286,12 @@ It's a mix of learning by doing, documenting what I find, and building tools to 
 **Container security beyond the basics.** Distroless images, runtime protection, secrets management, escape prevention. Docker makes it easy to deploy things. Also makes it easy to deploy insecure things.
 
 **Building detection that actually works.** Prevention is great, but you need to know when something bad is happening. Working on CloudWatch queries, Security Hub rules, and custom detection logic that catches real attacks without drowning you in false positives.
+
+## Flow: How a Typical Repo Gets Built
+
+```
+Idea -> rough notes -> messy prototype -> test data -> docs -> clean it up
+```
 
 ## Career Transition: DevOps to Security
 
@@ -209,6 +306,16 @@ If you're thinking about making a similar move, here's what helped me:
 **The DevOps skills transfer.** Infrastructure knowledge, automation, CI/CD, scripting—all of it's useful in security. You're just applying it differently.
 
 **Security is a mindset shift.** In DevOps, you're optimizing for availability and speed. In security, you're thinking about what could go wrong and how to limit the damage when it does.
+
+## What I'm Planning Next
+
+Not all of this will land right away, but it's the direction:
+
+- IAM escalation scenario (walk through a full path, then harden it)
+- Secrets management scenario with rotation failures
+- Add more detection playbooks (short, practical, actually runnable)
+- Expand the policy analyzer into a CI/CD check
+- Write one or two incident postmortems (sanitized) for learning
 
 ## How My GitHub is Organized
 
@@ -256,6 +363,10 @@ erica-batra (you are here)
 **Detection matters as much as prevention.** You're not going to stop every attack. Know when something's happening and have a response plan.
 
 **Automation is your friend.** Manual security processes don't scale. They get skipped when people are busy. Automate or accept that it won't happen consistently.
+
+## If You Only Read One Section
+
+I build things to understand them. That includes tools, scenarios, and docs. If something feels too clean or too perfect, it's probably not real. I try to keep the work honest. That means small mistakes, awkward edges, and lessons learned the hard way.
 
 ## Get in Touch
 
